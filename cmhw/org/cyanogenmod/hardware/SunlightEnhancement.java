@@ -31,12 +31,19 @@ public class SunlightEnhancement {
 
     private static final String FILE_SRE = "/sys/class/graphics/fb0/sre";
 
+    private static final boolean sHasNativeSupport =
+            LiveDisplayVendorImpl.hasNativeFeature(LiveDisplayVendorImpl.OUTDOOR_MODE);
+
     /**
      * Whether device supports SRE
      *
      * @return boolean Supported devices must return always true
      */
     public static boolean isSupported() {
+        if (sHasNativeSupport) {
+            return true;
+        }
+
         File f = new File(FILE_SRE);
 
         if(f.exists()) {
@@ -54,6 +61,9 @@ public class SunlightEnhancement {
      */
     public static boolean isEnabled() {
         try {
+            if (sHasNativeSupport) {
+                return LiveDisplayVendorImpl.native_isOutdoorModeEnabled();
+            }
             return Integer.parseInt(FileUtils.readOneLine(FILE_SRE)) > 0;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
@@ -69,6 +79,10 @@ public class SunlightEnhancement {
      * failed; true in any other case.
      */
     public static boolean setEnabled(boolean status) {
+        if (sHasNativeSupport) {
+            return LiveDisplayVendorImpl.native_setOutdoorModeEnabled(status);
+        }
+
         return FileUtils.writeLine(FILE_SRE, status ? "2" : "0");
     }
 
@@ -78,6 +92,19 @@ public class SunlightEnhancement {
      * @return boolean False if adaptive backlight is not a dependency
      */
     public static boolean isAdaptiveBacklightRequired() {
+        return false;
+    }
+
+    /**
+     * Set this to true if the implementation is self-managed and does
+     * it's own ambient sensing. In this case, setEnabled is assumed
+     * to toggle the feature on or off, but not activate it. If set
+     * to false, LiveDisplay will call setEnabled when the ambient lux
+     * threshold is crossed.
+     *
+     * @return true if this enhancement is self-managed
+     */
+    public static boolean isSelfManaged() {
         return false;
     }
 }
