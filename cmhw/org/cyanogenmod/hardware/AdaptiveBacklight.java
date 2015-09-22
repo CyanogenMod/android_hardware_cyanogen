@@ -32,12 +32,19 @@ public class AdaptiveBacklight {
 
     private static final String FILE_CABC = "/sys/class/graphics/fb0/cabc";
 
+    private static final boolean sHasNativeSupport =
+            LiveDisplayVendorImpl.hasNativeFeature(LiveDisplayVendorImpl.ADAPTIVE_BACKLIGHT);
+
     /**
      * Whether device supports an adaptive backlight technology.
      *
      * @return boolean Supported devices must return always true
      */
     public static boolean isSupported() {
+        if (sHasNativeSupport) {
+            return true;
+        }
+
         final File f = new File(FILE_CABC);
 
         if(f.exists()) {
@@ -55,6 +62,9 @@ public class AdaptiveBacklight {
      */
     public static boolean isEnabled() {
         try {
+            if (sHasNativeSupport) {
+                return LiveDisplayVendorImpl.native_isAdaptiveBacklightEnabled();
+            }
             return Integer.parseInt(FileUtils.readOneLine(FILE_CABC)) > 0;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
@@ -70,6 +80,9 @@ public class AdaptiveBacklight {
      * failed; true in any other case.
      */
     public static boolean setEnabled(boolean status) {
+        if (sHasNativeSupport) {
+            return LiveDisplayVendorImpl.native_setAdaptiveBacklightEnabled(status);
+        }
         return FileUtils.writeLine(FILE_CABC, status ? "1" : "0");
     }
 }
