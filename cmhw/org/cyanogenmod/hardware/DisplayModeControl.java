@@ -34,30 +34,15 @@ import cyanogenmod.hardware.DisplayMode;
 
 public class DisplayModeControl {
 
-    private static boolean sNativeLibraryLoaded;
-
-    static {
-        try {
-            System.loadLibrary("jni_livedisplay_qdcm");
-            sNativeLibraryLoaded = true;
-        } catch (Throwable t) {
-            sNativeLibraryLoaded = false;
-            Log.w("CMHW", "Display mode support unavailable.");
-        }
-    }
-
-    private static native boolean native_isSupported();
-    private static native DisplayMode[] native_getDisplayModes();
-    private static native DisplayMode native_getCurrentDisplayMode();
-    private static native DisplayMode native_getDefaultDisplayMode();
-    private static native boolean native_setDisplayMode(DisplayMode mode, boolean makeDefault);
+    private static final boolean sHasNativeSupport =
+            LiveDisplayVendorImpl.hasNativeFeature(LiveDisplayVendorImpl.DISPLAY_MODES);
 
     /*
      * All HAF classes should export this boolean.
      * Real implementations must, of course, return true
      */
     public static boolean isSupported() {
-        return sNativeLibraryLoaded && native_isSupported();
+        return sHasNativeSupport;
     }
 
     /*
@@ -68,10 +53,10 @@ public class DisplayModeControl {
      * map the name to a human-readable format or perform translation.
      */
     public static DisplayMode[] getAvailableModes() {
-        if (!sNativeLibraryLoaded) {
+        if (!sHasNativeSupport) {
             return new DisplayMode[0];
         }
-        return native_getDisplayModes();
+        return LiveDisplayVendorImpl.native_getDisplayModes();
     }
 
     /*
@@ -79,10 +64,10 @@ public class DisplayModeControl {
      * null if no mode is selected.
      */
     public static DisplayMode getCurrentMode() {
-        if (!sNativeLibraryLoaded) {
+        if (!sHasNativeSupport) {
             return null;
         }
-        return native_getCurrentDisplayMode();
+        return LiveDisplayVendorImpl.native_getCurrentDisplayMode();
     }
 
     /*
@@ -92,10 +77,10 @@ public class DisplayModeControl {
      * if this mode is valid.
      */
     public static boolean setMode(DisplayMode mode, boolean makeDefault) {
-        if (!sNativeLibraryLoaded) {
+        if (!sHasNativeSupport) {
             return false;
         }
-        return native_setDisplayMode(mode, makeDefault);
+        return LiveDisplayVendorImpl.native_setDisplayMode(mode, makeDefault);
     }
 
     /*
@@ -103,9 +88,9 @@ public class DisplayModeControl {
      * string identifier. Can return null if there is no default.
      */
     public static DisplayMode getDefaultMode() {
-        if (!sNativeLibraryLoaded) {
+        if (!sHasNativeSupport) {
             return null;
         }
-        return native_getDefaultDisplayMode();
+        return LiveDisplayVendorImpl.native_getDefaultDisplayMode();
     }
 }
