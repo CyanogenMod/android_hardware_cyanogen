@@ -83,6 +83,6 @@ public class AdaptiveBacklight {
         if (sHasNativeSupport) {
             return LiveDisplayVendorImpl.native_setAdaptiveBacklightEnabled(status);
         }
-        return FileUtils.writeLine(FILE_CABC, status ? "1" : "0");
+        return FileUtils.writeLine(FILE_CABC, status ? "0" : "1");
     }
 }
