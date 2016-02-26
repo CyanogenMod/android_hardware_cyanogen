@@ -50,8 +50,9 @@ public class UniqueDeviceId {
             return sUniqueId;
         }
 
+        String sMmcType = FileUtils.readOneLine("/sys/block/mmcblk0/device/type");
         String sCid = FileUtils.readOneLine("/sys/block/mmcblk0/device/cid");
-        if (sCid != null) {
+        if ("MMC".equals(sMmcType) && sCid != null) {
             sCid = sCid.trim();
             if (sCid.length() == 32) {
                 sUniqueId = String.format("%03x00000%32s", TYPE_MMC0_CID, sCid);
