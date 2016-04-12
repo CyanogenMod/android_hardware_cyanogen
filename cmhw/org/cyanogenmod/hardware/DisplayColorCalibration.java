@@ -16,24 +16,48 @@
 
 package org.cyanogenmod.hardware;
 
-import java.io.File;
-import java.util.Scanner;
+import android.os.IBinder;
+import android.os.Parcel;
+import android.os.RemoteException;
+import android.os.ServiceManager;
+import android.os.SystemProperties;
+import android.util.Slog;
+
 import org.cyanogenmod.hardware.util.FileUtils;
 
+import java.io.File;
+
 public class DisplayColorCalibration {
+
+    private static final String TAG = "DisplayColorCalibration";
+
     private static final String COLOR_FILE = "/sys/class/graphics/fb0/rgb";
 
+    private static final boolean sUseGPUMode;
+
+    private static final int MIN = 255;
+    private static final int MAX = 32768;
+
+    private static final int[] sCurColors = new int[] { MAX, MAX, MAX };
+
+    static {
+        // We can also support GPU transform using RenderEngine. This is not
+        // preferred though, as it has a high power cost.
+        sUseGPUMode = !(new File(COLOR_FILE).exists()) ||
+                SystemProperties.getBoolean("debug.livedisplay.force_gpu", false);
+    }
+
     public static boolean isSupported() {
-        File f = new File(COLOR_FILE);
-        return f.exists();
+        // Always true, use GPU mode if no HW support
+        return true;
     }
 
     public static int getMaxValue()  {
-        return 32768;
+        return MAX;
     }
 
     public static int getMinValue()  {
-        return 255;
+        return MIN;
     }
 
     public static int getDefValue() {
@@ -41,10 +65,85 @@ public class DisplayColorCalibration {
     }
 
     public static String getCurColors()  {
-        return FileUtils.readOneLine(COLOR_FILE);
+        if (!sUseGPUMode) {
+            return FileUtils.readOneLine(COLOR_FILE);
+        }
+
+        return sCurColors[0] + " " + sCurColors[1] + " " + sCurColors[2];
     }
 
     public static boolean setColors(String colors) {
-        return FileUtils.writeLine(COLOR_FILE, colors);
+        if (!sUseGPUMode) {
+            return FileUtils.writeLine(COLOR_FILE, colors);
+        }
+
+        float[] mat = toColorMatrix(colors);
+
+        // set to null if identity
+        if (mat == null ||
+                (mat[0] == 1.0f && mat[5] == 1.0f &&
+                 mat[10] == 1.0f && mat[15] == 1.0f)) {
+            return setColorTransform(null);
+        }
+        return setColorTransform(mat);
     }
+
+    private static float[] toColorMatrix(String rgbString) {
+        String[] adj = rgbString == null ? null : rgbString.split(" ");
+
+        if (adj == null || adj.length != 3) {
+            return null;
+        }
+
+        float[] mat = new float[16];
+
+        // sanity check
+        for (int i = 0; i < 3; i++) {
+            int v = Integer.parsePositiveInt(adj[i]);
+
+            if (v >= MAX) {
+                v = MAX;
+            } else if (v < MIN) {
+                v = MIN;
+            }
+
+            mat[i * 5] = (float)v / (float)MAX;
+            sCurColors[i] = v;
+        }
+
+        mat[15] = 1.0f;
+        return mat;
+    }
+
+    /**
+     * Sets the surface flinger's color transformation as a 4x4 matrix. If the
+     * matrix is null, color transformations are disabled.
+     *
+     * @param m the float array that holds the transformation matrix, or null to
+     *            disable transformation
+     */
+    private static boolean setColorTransform(float[] m) {
+        try {
+            final IBinder flinger = ServiceManager.getService("SurfaceFlinger");
+            if (flinger != null) {
+                final Parcel data = Parcel.obtain();
+                data.writeInterfaceToken("android.ui.ISurfaceComposer");
+                if (m != null) {
+                    data.writeInt(1);
+                    for (int i = 0; i < 16; i++) {
+                        data.writeFloat(m[i]);
+                    }
+                } else {
+                    data.writeInt(0);
+                }
+                flinger.transact(1030, data, null, 0);
+                data.recycle();
+            }
+        } catch (RemoteException ex) {
+            Slog.e(TAG, "Failed to set color transform", ex);
+            return false;
+        }
+        return true;
+    }
+
 }
