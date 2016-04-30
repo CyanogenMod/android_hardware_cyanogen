@@ -27,7 +27,7 @@ import java.io.File;
  */
 public class ColorEnhancement {
 
-    private static final String TAG = "AutoContrast";
+    private static final String TAG = "ColorEnhancement";
 
     private static final String FILE_CE = "/sys/class/graphics/fb0/color_enhance";
 
