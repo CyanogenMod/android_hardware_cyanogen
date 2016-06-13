@@ -16,11 +16,9 @@
 
 package org.cyanogenmod.hardware;
 
-import org.cyanogenmod.hardware.util.FileUtils;
+import org.cyanogenmod.internal.util.FileUtils;
 
 import android.util.Log;
-
-import java.io.File;
 
 /**
  * Facemelt mode!
@@ -44,13 +42,7 @@ public class SunlightEnhancement {
             return true;
         }
 
-        File f = new File(FILE_SRE);
-
-        if(f.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return FileUtils.isFileWritable(FILE_SRE);
     }
 
     /**

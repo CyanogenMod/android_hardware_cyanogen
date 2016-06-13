@@ -16,11 +16,9 @@
 
 package org.cyanogenmod.hardware;
 
-import org.cyanogenmod.hardware.util.FileUtils;
+import org.cyanogenmod.internal.util.FileUtils;
 
 import android.util.Log;
-
-import java.io.File;
 
 /**
  * Auto Contrast Optimization
@@ -37,13 +35,7 @@ public class AutoContrast {
      * @return boolean Supported devices must return always true
      */
     public static boolean isSupported() {
-        File f = new File(FILE_ACO);
-
-        if(f.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return FileUtils.isFileWritable(FILE_ACO);
     }
 
     /**

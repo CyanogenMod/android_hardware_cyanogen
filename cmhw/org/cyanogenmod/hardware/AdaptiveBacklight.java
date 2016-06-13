@@ -16,11 +16,9 @@
 
 package org.cyanogenmod.hardware;
 
-import org.cyanogenmod.hardware.util.FileUtils;
+import org.cyanogenmod.internal.util.FileUtils;
 
 import android.util.Log;
-
-import java.io.File;
 
 /**
  * Adaptive backlight support (this refers to technologies like NVIDIA SmartDimmer,
@@ -45,13 +43,7 @@ public class AdaptiveBacklight {
             return true;
         }
 
-        final File f = new File(FILE_CABC);
-
-        if(f.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return FileUtils.isFileWritable(FILE_CABC);
     }
 
     /**
