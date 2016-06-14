@@ -50,11 +50,11 @@ public class LiveDisplayVendorImpl {
             sFeatures = 0;
         }
     }
- 
+
     public static boolean hasNativeFeature(int feature) {
         return sNativeLibraryLoaded && ((sFeatures & feature) != 0);
     }
- 
+
     private static native int native_getSupportedFeatures();
 
     public static native DisplayMode[] native_getDisplayModes();
