@@ -28,7 +28,7 @@ public class LiveDisplayVendorImpl {
     public static final String TAG = "LiveDisplayVendorImpl";
 
     public static final int DISPLAY_MODES = 0x1;
-    public static final int COLOR_TEMPERATURE = 0x2;
+    public static final int COLOR_BALANCE = 0x2;
     public static final int OUTDOOR_MODE = 0x4;
     public static final int ADAPTIVE_BACKLIGHT = 0x8;
 
@@ -67,4 +67,10 @@ public class LiveDisplayVendorImpl {
 
     public static native boolean native_setOutdoorModeEnabled(boolean enabled);
     public static native boolean native_isOutdoorModeEnabled();
+
+    public static native int native_getColorBalanceMin();
+    public static native int native_getColorBalanceMax();
+    public static native int native_getColorBalance();
+    public static native boolean native_setColorBalance(int value);
+
 }
