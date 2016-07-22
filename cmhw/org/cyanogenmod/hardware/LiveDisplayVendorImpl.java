@@ -17,8 +17,10 @@
 package org.cyanogenmod.hardware;
 
 import android.util.Log;
+import android.util.Range;
 
 import cyanogenmod.hardware.DisplayMode;
+import cyanogenmod.hardware.HSIC;
 
 /**
  * This class loads an implementation of the LiveDisplay native interface.
@@ -31,6 +33,7 @@ public class LiveDisplayVendorImpl {
     public static final int COLOR_BALANCE = 0x2;
     public static final int OUTDOOR_MODE = 0x4;
     public static final int ADAPTIVE_BACKLIGHT = 0x8;
+    public static final int PICTURE_ADJUSTMENT = 0x10;
 
     private static boolean sNativeLibraryLoaded;
     private static int     sFeatures;
@@ -39,12 +42,13 @@ public class LiveDisplayVendorImpl {
         try {
             System.loadLibrary("jni_livedisplay");
 
-            sFeatures = native_getSupportedFeatures();
-
-            if (sFeatures > 0) {
-                sNativeLibraryLoaded = true;
+            final int features = native_getSupportedFeatures();
+            if (features > 0) {
                 Log.i(TAG, "Using native LiveDisplay backend (features: " + sFeatures + ")");
             }
+
+            sNativeLibraryLoaded = features > 0;
+            sFeatures = features;
         } catch (Throwable t) {
             sNativeLibraryLoaded = false;
             sFeatures = 0;
@@ -72,4 +76,13 @@ public class LiveDisplayVendorImpl {
     public static native int native_getColorBalance();
     public static native boolean native_setColorBalance(int value);
 
+    public static native boolean native_setPictureAdjustment(final HSIC hsic);
+    public static native HSIC native_getPictureAdjustment();
+    public static native HSIC native_getDefaultPictureAdjustment();
+
+    public static native Range<Float> native_getHueRange();
+    public static native Range<Float> native_getSaturationRange();
+    public static native Range<Float> native_getIntensityRange();
+    public static native Range<Float> native_getContrastRange();
+    public static native Range<Float> native_getSaturationThresholdRange();
 }
