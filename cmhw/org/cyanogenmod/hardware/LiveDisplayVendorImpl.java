@@ -68,8 +68,7 @@ public class LiveDisplayVendorImpl {
     public static native boolean native_setOutdoorModeEnabled(boolean enabled);
     public static native boolean native_isOutdoorModeEnabled();
 
-    public static native int native_getColorBalanceMin();
-    public static native int native_getColorBalanceMax();
+    public static native Range<Integer> native_getColorBalanceRange();
     public static native int native_getColorBalance();
     public static native boolean native_setColorBalance(int value);
 
