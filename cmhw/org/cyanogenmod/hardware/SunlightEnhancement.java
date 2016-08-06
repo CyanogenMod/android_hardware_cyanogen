@@ -75,7 +75,7 @@ public class SunlightEnhancement {
             return LiveDisplayVendorImpl.native_setOutdoorModeEnabled(status);
         }
 
-        return FileUtils.writeLine(FILE_SRE, status ? "2" : "0");
+        return FileUtils.writeLine(FILE_SRE, status ? "1" : "0");
     }
 
     /**
