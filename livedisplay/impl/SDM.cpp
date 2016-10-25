@@ -39,7 +39,7 @@ status_t SDM::loadVendorLibrary() {
 
     mLibHandle = dlopen(SDM_DISP_LIB, RTLD_NOW);
     if (mLibHandle == NULL) {
-        ALOGE("DLOPEN failed for %s", SDM_DISP_LIB);
+        ALOGE("DLOPEN failed for %s (%s)", SDM_DISP_LIB, dlerror());
         return NO_INIT;
     }
 
@@ -193,7 +193,7 @@ status_t SDM::setAdaptiveBacklightEnabled(bool enabled) {
             mCachedFOSSStatus = enabled;
         }
     }
-    delete buf;
+    delete[] buf;
     return rc;
 }
 
