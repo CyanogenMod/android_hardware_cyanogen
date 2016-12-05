@@ -27,13 +27,33 @@ public class SunlightEnhancement {
 
     private static final String TAG = "SunlightEnhancement";
 
+    private static final String FACEMELT_PATH = getFacemeltPath();
+    private static final String FACEMELT_MODE = getFacemeltMode();
+
+    private static final String FILE_HBM = "/sys/class/graphics/fb0/hbm";
     private static final String FILE_SRE = "/sys/class/graphics/fb0/sre";
 
     private static final boolean sHasNativeSupport =
             LiveDisplayVendorImpl.hasNativeFeature(LiveDisplayVendorImpl.OUTDOOR_MODE);
 
+    private static String getFacemeltPath() {
+        if (FileUtils.fileExists(FILE_HBM)) {
+            return FILE_HBM;
+        } else {
+            return FILE_SRE;
+        }
+    }
+
+    private static String getFacemeltMode() {
+        if (FileUtils.fileExists(FILE_HBM)) {
+            return "1";
+        } else {
+            return "2";
+        }
+    }
+
     /**
-     * Whether device supports SRE
+     * Whether device supports sunlight enhancement
      *
      * @return boolean Supported devices must return always true
      */
@@ -42,21 +62,21 @@ public class SunlightEnhancement {
             return true;
         }
 
-        return FileUtils.isFileWritable(FILE_SRE);
+        return FileUtils.isFileWritable(FACEMELT_PATH);
     }
 
     /**
-     * This method return the current activation status of SRE
+     * This method return the current activation status of sunlight enhancement
      *
-     * @return boolean Must be false when SRE is not supported or not activated, or
-     * the operation failed while reading the status; true in any other case.
+     * @return boolean Must be false when sunlight enhancement is not supported or not activated,
+     * or the operation failed while reading the status; true in any other case.
      */
     public static boolean isEnabled() {
         try {
             if (sHasNativeSupport) {
                 return LiveDisplayVendorImpl.native_isOutdoorModeEnabled();
             }
-            return Integer.parseInt(FileUtils.readOneLine(FILE_SRE)) > 0;
+            return Integer.parseInt(FileUtils.readOneLine(FACEMELT_PATH)) > 0;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -64,10 +84,10 @@ public class SunlightEnhancement {
     }
 
     /**
-     * This method allows to setup SRE
+     * This method allows to setup sunlight enhancement
      *
-     * @param status The new SRE status
-     * @return boolean Must be false if SRE is not supported or the operation
+     * @param status The new sunlight enhancement status
+     * @return boolean Must be false if sunlight enhancement is not supported or the operation
      * failed; true in any other case.
      */
     public static boolean setEnabled(boolean status) {
@@ -75,7 +95,7 @@ public class SunlightEnhancement {
             return LiveDisplayVendorImpl.native_setOutdoorModeEnabled(status);
         }
 
-        return FileUtils.writeLine(FILE_SRE, status ? "2" : "0");
+        return FileUtils.writeLine(FACEMELT_PATH, status ? FACEMELT_MODE : "0");
     }
 
     /**
